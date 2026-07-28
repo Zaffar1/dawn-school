@@ -2,6 +2,10 @@
 
 @section('title', 'Collect Student Fee')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+@endsection
+
 @section('content')
 <div class="page-title-box">
     <div>
@@ -143,8 +147,18 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize TomSelect for searchable dropdown
+        new TomSelect("#student_id", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            }
+        });
+
         const studentSelect = document.getElementById('student_id');
         const infoCard = document.getElementById('student-info-card');
         
