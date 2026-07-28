@@ -79,6 +79,7 @@
                         <th>Percentage</th>
                         <th>Overall Grade</th>
                         <th>Result Status</th>
+                        <th>Class Position</th>
                         <th class="text-end" style="min-width: 120px;">Action</th>
                     </tr>
                 </thead>
@@ -99,6 +100,7 @@
                                     <span class="badge bg-danger text-white px-2.5 py-1.5">FAIL</span>
                                 @endif
                             </td>
+                            <td><span class="badge bg-primary text-white px-2.5 py-1.5 fw-bold">{{ $ms->position }}</span></td>
                             <td class="text-end">
                                 <a href="{{ route('marksheets.show', $ms->id) }}" class="btn btn-outline-info btn-sm me-1" title="View Detail Marksheet">
                                     <i class="fa-solid fa-eye"></i> View
@@ -110,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">No student marksheets have been submitted for this exam session. Go to 'Enter New Marks'.</td>
+                            <td colspan="10" class="text-center py-4 text-muted">No student marksheets have been submitted for this exam session. Go to 'Enter New Marks'.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -1,22 +1,22 @@
 @extends('layouts.app')
 
-@section('title', 'Hostel Residents Directory')
+@section('title', 'Hostel Students Directory')
 
 @section('content')
 <div class="page-title-box d-flex align-items-center justify-content-between">
     <div>
-        <h3 class="mb-1"><i class="fa-solid fa-users me-2 text-primary"></i>Hostel Residents</h3>
+        <h3 class="mb-1"><i class="fa-solid fa-users me-2 text-primary"></i>Hostel Students</h3>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('hostel.dashboard') }}">Sukkur Hostel</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Residents Directory</li>
+                <li class="breadcrumb-item active" aria-current="page">Students Directory</li>
             </ol>
         </nav>
     </div>
     <div>
         <a href="{{ route('hostel.residents.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-user-plus me-1"></i> Register Resident / Staff
+            <i class="fa-solid fa-user-plus me-1"></i> Register Student / Staff
         </a>
     </div>
 </div>
@@ -29,7 +29,7 @@
                 <i class="fa-solid fa-user-check"></i>
             </div>
             <div class="stat-value">{{ $totalActive }}</div>
-            <div class="stat-label">Active Residents</div>
+            <div class="stat-label">Active Students/Staff</div>
         </div>
     </div>
     <div class="col-md-4">
@@ -38,7 +38,7 @@
                 <i class="fa-solid fa-user-slash"></i>
             </div>
             <div class="stat-value">{{ $totalInactive }}</div>
-            <div class="stat-label">Inactive/Left Residents</div>
+            <div class="stat-label">Inactive/Left Students/Staff</div>
         </div>
     </div>
     <div class="col-md-4">
@@ -57,7 +57,7 @@
     <form method="GET" action="{{ route('hostel.residents.index') }}">
         <div class="row g-3 align-items-end">
             <div class="col-md-6">
-                <label class="form-label small text-muted fw-semibold">Search Resident</label>
+                <label class="form-label small text-muted fw-semibold">Search Student/Staff</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -68,7 +68,7 @@
             <div class="col-md-4">
                 <label class="form-label small text-muted fw-semibold">Status</label>
                 <select name="status" class="form-select">
-                    <option value="">All Residents</option>
+                    <option value="">All Students/Staff</option>
                     <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive/Left</option>
                 </select>
@@ -86,10 +86,11 @@
         <table class="table table-custom align-middle">
             <thead>
                 <tr>
-                    <th>Resident Name</th>
-                    <th>Resident Type</th>
+                    <th>Student Name</th>
+                    <th>Type</th>
                     <th>Room No.</th>
                     <th>Phone</th>
+                    <th>Deposit [Advance]</th>
                     <th>Fee / Salary</th>
                     <th>Joining Date</th>
                     <th>Leaving Date</th>
@@ -111,9 +112,9 @@
                             </div>
                         </td>
                         <td>
-                            @if($res->resident_type === 'resident')
+                            @if($res->resident_type === 'student' || $res->resident_type === 'resident')
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 fw-semibold">
-                                    Hostel Resident
+                                    Hostel Student
                                 </span>
                             @else
                                 <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1.5 fw-semibold">
@@ -123,6 +124,7 @@
                         </td>
                         <td><span class="fw-bold text-dark"><i class="fa-solid fa-door-open me-1 text-muted"></i>{{ $res->room_number }}</span></td>
                         <td>{{ $res->phone ?? '-' }}</td>
+                        <td><span class="fw-semibold text-dark">Rs. {{ number_format($res->deposit, 2) }}</span></td>
                         <td><span class="fw-semibold text-dark">Rs. {{ number_format($res->monthly_fee, 2) }}</span></td>
                         <td>{{ $res->joining_date->format('d-M-Y') }}</td>
                         <td>{{ $res->leaving_date ? $res->leaving_date->format('d-M-Y') : '-' }}</td>
@@ -143,10 +145,10 @@
                                 <a href="{{ route('hostel.residents.edit', $res->id) }}" class="btn btn-outline-primary btn-sm ms-1" title="Edit details">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <form action="{{ route('hostel.residents.destroy', $res->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this resident? All associated fee payments will also be deleted.')">
+                                <form action="{{ route('hostel.residents.destroy', $res->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this student/staff? All associated fee payments will also be deleted.')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm ms-1" title="Delete resident">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm ms-1" title="Delete student">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
@@ -155,9 +157,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-muted">
+                        <td colspan="10" class="text-center py-5 text-muted">
                             <i class="fa-solid fa-user-group fs-2 mb-3 d-block text-black-50"></i>
-                            No residents registered in the system.
+                            No students/staff registered in the system.
                         </td>
                     </tr>
                 @endforelse

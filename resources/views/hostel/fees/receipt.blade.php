@@ -147,18 +147,18 @@
         </div>
     </div>
 
-    <!-- Resident Info -->
+    <!-- Student/Staff Info -->
     <div class="card bg-light border-0 mb-4 rounded-3">
         <div class="card-body p-4">
-            <h6 class="text-primary fw-bold mb-3"><i class="fa-solid fa-user me-2"></i>Resident / Staff Information</h6>
+            <h6 class="text-primary fw-bold mb-3"><i class="fa-solid fa-user me-2"></i>Student / Staff Information</h6>
             <div class="row g-2 small">
                 <div class="col-sm-4 text-muted">Full Name:</div>
                 <div class="col-sm-8 fw-semibold text-dark">{{ $payment->resident->name }}</div>
                 
                 <div class="col-sm-4 text-muted">Person Type:</div>
                 <div class="col-sm-8">
-                    @if($payment->resident->resident_type === 'resident')
-                        Hostel Resident
+                    @if($payment->resident->resident_type === 'student' || $payment->resident->resident_type === 'resident')
+                        Hostel Student
                     @else
                         Hostel Staff
                     @endif
@@ -179,7 +179,9 @@
             <thead>
                 <tr>
                     <th>Description</th>
-                    <th class="text-end">Amount</th>
+                    <th class="text-end">Due Amount</th>
+                    <th class="text-end">Amount Paid</th>
+                    <th class="text-end">Arrears</th>
                 </tr>
             </thead>
             <tbody>
@@ -191,11 +193,13 @@
                             <div class="text-muted small"><i class="fa-solid fa-receipt me-1"></i>Ref No: {{ $payment->reference_no }}</div>
                         @endif
                     </td>
-                    <td class="text-end fw-bold text-dark">Rs. {{ number_format($payment->amount, 2) }}</td>
+                    <td class="text-end fw-bold text-secondary">Rs. {{ number_format($payment->due_amount ?? ($payment->resident->monthly_fee ?? 0.00), 2) }}</td>
+                    <td class="text-end fw-bold text-success">Rs. {{ number_format($payment->amount, 2) }}</td>
+                    <td class="text-end fw-bold {{ ($payment->arrears ?? 0) > 0 ? 'text-danger' : 'text-muted' }}">Rs. {{ number_format($payment->arrears ?? 0.00, 2) }}</td>
                 </tr>
                 @if($payment->notes)
                     <tr>
-                        <td colspan="2" class="text-muted py-1 small">
+                        <td colspan="4" class="text-muted py-1 small">
                             <strong>Remarks:</strong> {{ $payment->notes }}
                         </td>
                     </tr>
@@ -218,7 +222,7 @@
     <!-- Signatures -->
     <div class="row mt-5 pt-3">
         <div class="col-6">
-            <div class="signature-line">Resident Signature</div>
+            <div class="signature-line">Student Signature</div>
         </div>
         <div class="col-6">
             <div class="signature-line">Authorized Signature</div>

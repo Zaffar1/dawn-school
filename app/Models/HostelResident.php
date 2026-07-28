@@ -16,6 +16,7 @@ class HostelResident extends Model
         'phone',
         'room_number',
         'monthly_fee',
+        'deposit',
         'joining_date',
         'leaving_date',
         'status',
@@ -25,6 +26,7 @@ class HostelResident extends Model
         'joining_date' => 'date',
         'leaving_date' => 'date',
         'monthly_fee' => 'decimal:2',
+        'deposit' => 'decimal:2',
     ];
 
     public function student(): BelongsTo

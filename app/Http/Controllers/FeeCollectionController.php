@@ -18,10 +18,46 @@ class FeeCollectionController extends Controller
         $this->feeService = $feeService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $receipts = FeeReceipt::with(['student.class'])->orderBy('date', 'desc')->orderBy('id', 'desc')->paginate(15);
-        return view('fees.index', compact('receipts'));
+        $query = FeeReceipt::with(['student.class']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('admission_number', 'like', "%{$search}%")
+                  ->orWhere('roll_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('class_id')) {
+            $classId = $request->class_id;
+            $query->whereHas('student', function ($q) use ($classId) {
+                $q->where('class_id', $classId);
+            });
+        }
+
+        if ($request->filled('month')) {
+            $parts = explode('-', $request->month);
+            if (count($parts) === 2) {
+                $query->whereYear('date', $parts[0])
+                      ->whereMonth('date', $parts[1]);
+            }
+        }
+
+        if ($request->filled('has_arrears') && $request->has_arrears == '1') {
+            $query->where('remaining_arrears', '>', 0);
+        }
+
+        $receipts = $query->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        $classes = SchoolClass::where('status', 'active')->orderBy('name')->get();
+
+        return view('fees.index', compact('receipts', 'classes'));
     }
 
     public function create()

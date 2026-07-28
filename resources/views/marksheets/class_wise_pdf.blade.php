@@ -133,6 +133,7 @@
                 <th style="width: 80px;">Percentage</th>
                 <th style="width: 60px;">Grade</th>
                 <th style="width: 70px;">Result</th>
+                <th style="width: 70px;">Position</th>
             </tr>
         </thead>
         <tbody>
@@ -148,10 +149,11 @@
                     <td style="font-weight: bold; {{ $ms->result === 'PASS' ? 'color: #10b981;' : 'color: #ef4444;' }}">
                         {{ $ms->result }}
                     </td>
+                    <td style="font-weight: bold; color: #1e3a8a;">{{ $ms->position }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">No student marksheets generated for this exam yet.</td>
+                    <td colspan="9" class="text-center py-4 text-muted">No student marksheets generated for this exam yet.</td>
                 </tr>
             @endforelse
         </tbody>

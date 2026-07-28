@@ -115,5 +115,45 @@ class Marksheet extends Model
 
         return ucwords($string);
     }
+
+    public function getPositionAttribute(): string
+    {
+        // 1. Get class_id of student
+        $classId = $this->student->class_id;
+
+        // 2. Query all marksheets of students in the same class, for same exam, same session
+        $marksheets = Marksheet::where('exam_id', $this->exam_id)
+            ->where('academic_session', $this->academic_session)
+            ->whereHas('student', function ($query) use ($classId) {
+                $query->where('class_id', $classId);
+            })
+            ->orderBy('obtained_marks', 'desc')
+            ->orderBy('percentage', 'desc')
+            ->get();
+
+        // 3. Find our position (rank)
+        $rank = 1;
+        foreach ($marksheets as $ms) {
+            if ($ms->student_id === $this->student_id) {
+                return self::formatOrdinal($rank);
+            }
+            $rank++;
+        }
+
+        return '-';
+    }
+
+    public static function formatOrdinal(int $number): string
+    {
+        if (in_array(($number % 100), array(11, 12, 13))) {
+            return $number . 'th';
+        }
+        switch ($number % 10) {
+            case 1:  return $number . 'st';
+            case 2:  return $number . 'nd';
+            case 3:  return $number . 'rd';
+            default: return $number . 'th';
+        }
+    }
 }
 

@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Hostel Person Details')
+@section('title', 'Edit Hostel Student/Staff Details')
 
 @section('content')
 <div class="page-title-box">
     <div>
-        <h3 class="mb-1"><i class="fa-solid fa-user-pen me-2 text-primary"></i>Edit Person Details</h3>
+        <h3 class="mb-1"><i class="fa-solid fa-user-pen me-2 text-primary"></i>Edit Student/Staff Details</h3>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('hostel.dashboard') }}">Sukkur Hostel</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('hostel.residents.index') }}">Residents Directory</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hostel.residents.index') }}">Students Directory</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edit</li>
             </ol>
         </nav>
@@ -29,7 +29,7 @@
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Person Type <span class="text-danger">*</span></label>
                 <select name="resident_type" id="resident_type" class="form-select @error('resident_type') is-invalid @enderror" required>
-                    <option value="resident" {{ old('resident_type', $resident->resident_type) === 'resident' ? 'selected' : '' }}>Hostel Resident</option>
+                    <option value="student" {{ (old('resident_type', $resident->resident_type) === 'student' || old('resident_type', $resident->resident_type) === 'resident') ? 'selected' : '' }}>Hostel Student</option>
                     <option value="staff" {{ old('resident_type', $resident->resident_type) === 'staff' ? 'selected' : '' }}>Hostel Staff</option>
                 </select>
                 @error('resident_type')
@@ -57,7 +57,7 @@
             </div>
 
             <!-- Room Number -->
-            <div class="col-md-6">
+            <div class="col-md-6" id="room_number_container">
                 <label class="form-label fw-semibold" id="room_number_label">Room Assigned <span class="text-danger">*</span></label>
                 <input type="text" name="room_number" id="room_number" class="form-control @error('room_number') is-invalid @enderror" placeholder="e.g. Room-101, Room-203" value="{{ old('room_number', $resident->room_number) }}" required>
                 @error('room_number')
@@ -73,6 +73,18 @@
                     <input type="number" step="0.01" name="monthly_fee" id="monthly_fee" class="form-control @error('monthly_fee') is-invalid @enderror" placeholder="0.00" value="{{ old('monthly_fee', $resident->monthly_fee) }}" required>
                 </div>
                 @error('monthly_fee')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <!-- Deposit [Advance] -->
+            <div class="col-md-6" id="deposit_container">
+                <label class="form-label fw-semibold" id="deposit_label">Deposit [Advance] (PKR)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted">Rs.</span>
+                    <input type="number" step="0.01" name="deposit" id="deposit" class="form-control @error('deposit') is-invalid @enderror" placeholder="0.00" value="{{ old('deposit', $resident->deposit) }}">
+                </div>
+                @error('deposit')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
@@ -109,7 +121,7 @@
 
             <!-- Notes -->
             <div class="col-12">
-                <label class="form-label fw-semibold" id="notes_label">Hostel / Resident Notes</label>
+                <label class="form-label fw-semibold" id="notes_label">Hostel / Student Notes</label>
                 <textarea name="notes" id="notes" rows="3" class="form-control @error('notes') is-invalid @enderror" placeholder="Enter emergency contacts, instructions, or remarks...">{{ old('notes', $resident->notes) }}</textarea>
                 @error('notes')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -118,7 +130,7 @@
 
             <!-- Form Actions -->
             <div class="col-12 mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary" id="submit_btn"><i class="fa-solid fa-floppy-disk me-1"></i> Update Resident / Staff Details</button>
+                <button type="submit" class="btn btn-primary" id="submit_btn"><i class="fa-solid fa-floppy-disk me-1"></i> Update Student / Staff Details</button>
                 <a href="{{ route('hostel.residents.index') }}" class="btn btn-light border">Cancel</a>
             </div>
         </div>
@@ -197,34 +209,43 @@
             }
         }
 
-        // Dynamic fields updater for Staff vs Resident
+        // Dynamic fields updater for Staff vs Student
         const typeSelect = document.getElementById('resident_type');
         const feeLabel = document.getElementById('monthly_fee_label');
         const feeInput = document.getElementById('monthly_fee');
-        const roomLabel = document.getElementById('room_number_label');
         const roomInput = document.getElementById('room_number');
         const joinLabel = document.getElementById('joining_date_label');
         const notesLabel = document.getElementById('notes_label');
         const notesInput = document.getElementById('notes');
+        const depositContainer = document.getElementById('deposit_container');
+        const roomContainer = document.getElementById('room_number_container');
 
         function updateLabels() {
             const isStaff = typeSelect.value === 'staff';
             if (isStaff) {
                 feeLabel.innerHTML = 'Monthly Salary (PKR) <span class="text-danger">*</span>';
                 feeInput.placeholder = 'e.g. 25000';
-                roomLabel.innerHTML = 'Office / Staff Quarter Assigned <span class="text-danger">*</span>';
-                roomInput.placeholder = 'e.g. Office, Room-102';
                 joinLabel.innerHTML = 'Employment / Joining Date <span class="text-danger">*</span>';
                 notesLabel.innerText = 'Staff Notes / Remarks';
                 notesInput.placeholder = 'Enter designation, shift timing, or other notes...';
+                depositContainer.style.display = 'none';
+                roomContainer.style.display = 'none';
+                roomInput.required = false;
+                if (roomInput.value === '') {
+                    roomInput.value = 'N/A';
+                }
             } else {
                 feeLabel.innerHTML = 'Monthly Hostel Charge (PKR) <span class="text-danger">*</span>';
                 feeInput.placeholder = '0.00';
-                roomLabel.innerHTML = 'Room Assigned <span class="text-danger">*</span>';
-                roomInput.placeholder = 'e.g. Room-101, Room-203';
                 joinLabel.innerHTML = 'Hostel Joining Date <span class="text-danger">*</span>';
-                notesLabel.innerText = 'Hostel / Resident Notes';
+                notesLabel.innerText = 'Hostel / Student Notes';
                 notesInput.placeholder = 'Enter emergency contacts, instructions, or remarks...';
+                depositContainer.style.display = 'block';
+                roomContainer.style.display = 'block';
+                roomInput.required = true;
+                if (roomInput.value === 'N/A') {
+                    roomInput.value = '';
+                }
             }
         }
 

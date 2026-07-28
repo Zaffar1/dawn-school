@@ -10,6 +10,8 @@ class HostelFeePayment extends Model
     protected $fillable = [
         'hostel_resident_id',
         'amount',
+        'due_amount',
+        'arrears',
         'date',
         'billing_month',
         'payment_method',
@@ -20,6 +22,8 @@ class HostelFeePayment extends Model
     protected $casts = [
         'date' => 'date',
         'amount' => 'decimal:2',
+        'due_amount' => 'decimal:2',
+        'arrears' => 'decimal:2',
     ];
 
     public function resident(): BelongsTo

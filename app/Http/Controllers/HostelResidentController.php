@@ -57,11 +57,12 @@ class HostelResidentController extends Controller
         }
 
         $validated = $request->validate([
-            'resident_type' => 'required|in:resident,staff',
+            'resident_type' => 'required|in:student,resident,staff',
             'name' => 'required|string|max:255',
             'phone' => 'nullable|regex:/^((\+92)|(92)|(0))3\d{9}$/',
             'room_number' => 'required|string|max:50',
             'monthly_fee' => 'required|numeric|min:0',
+            'deposit' => 'nullable|numeric|min:0',
             'joining_date' => 'required|date',
             'status' => 'required|in:active,inactive',
             'notes' => 'nullable|string',
@@ -71,7 +72,7 @@ class HostelResidentController extends Controller
 
         HostelResident::create($validated);
 
-        return redirect()->route('hostel.residents.index')->with('success', 'Hostel person registered successfully.');
+        return redirect()->route('hostel.residents.index')->with('success', 'Hostel student/staff registered successfully.');
     }
 
     public function edit($id)
@@ -95,11 +96,12 @@ class HostelResidentController extends Controller
         }
 
         $validated = $request->validate([
-            'resident_type' => 'required|in:resident,staff',
+            'resident_type' => 'required|in:student,resident,staff',
             'name' => 'required|string|max:255',
             'phone' => 'nullable|regex:/^((\+92)|(92)|(0))3\d{9}$/',
             'room_number' => 'required|string|max:50',
             'monthly_fee' => 'required|numeric|min:0',
+            'deposit' => 'nullable|numeric|min:0',
             'joining_date' => 'required|date',
             'leaving_date' => 'nullable|date|after_or_equal:joining_date',
             'status' => 'required|in:active,inactive',
@@ -117,7 +119,7 @@ class HostelResidentController extends Controller
 
         $resident->update($validated);
 
-        return redirect()->route('hostel.residents.index')->with('success', 'Hostel person details updated.');
+        return redirect()->route('hostel.residents.index')->with('success', 'Hostel student/staff details updated.');
     }
 
     public function destroy($id)
@@ -125,6 +127,6 @@ class HostelResidentController extends Controller
         $resident = HostelResident::findOrFail($id);
         $resident->delete();
 
-        return redirect()->route('hostel.residents.index')->with('success', 'Hostel person removed from records.');
+        return redirect()->route('hostel.residents.index')->with('success', 'Hostel student/staff removed from records.');
     }
 }

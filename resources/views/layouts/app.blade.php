@@ -222,7 +222,7 @@
                         </li>
                         <li class="{{ Request::routeIs('hostel.residents.*') ? 'active' : '' }}">
                             <a href="{{ route('hostel.residents.index') }}">
-                                <i class="fa-solid fa-users me-1" style="font-size:0.8rem;"></i> Residents
+                                <i class="fa-solid fa-users me-1" style="font-size:0.8rem;"></i> Students
                             </a>
                         </li>
                         <li class="{{ Request::routeIs('hostel.resident-fees.*') ? 'active' : '' }}">
