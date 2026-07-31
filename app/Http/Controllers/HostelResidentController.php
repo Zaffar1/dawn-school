@@ -59,7 +59,7 @@ class HostelResidentController extends Controller
         $validated = $request->validate([
             'resident_type' => 'required|in:student,resident,staff',
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|regex:/^((\+92)|(92)|(0))3\d{9}$/',
+            'phone' => ['nullable', 'regex:/^((\+92)|(92)|(0))3\d{9}$/'],
             'room_number' => 'required|string|max:50',
             'monthly_fee' => 'required|numeric|min:0',
             'deposit' => 'nullable|numeric|min:0',
@@ -98,7 +98,7 @@ class HostelResidentController extends Controller
         $validated = $request->validate([
             'resident_type' => 'required|in:student,resident,staff',
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|regex:/^((\+92)|(92)|(0))3\d{9}$/',
+            'phone' => ['nullable', 'regex:/^((\+92)|(92)|(0))3\d{9}$/'],
             'room_number' => 'required|string|max:50',
             'monthly_fee' => 'required|numeric|min:0',
             'deposit' => 'nullable|numeric|min:0',
