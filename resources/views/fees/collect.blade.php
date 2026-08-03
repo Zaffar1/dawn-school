@@ -65,6 +65,39 @@
                     </div>
                 </div>
 
+                <!-- 2.5. Optional Collapsible Arrears Section -->
+                <div class="card border border-warning shadow-sm rounded-3 mb-4 d-none" id="arrears-section-card">
+                    <div class="card-header bg-warning-subtle text-warning-emphasis fw-bold d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#arrearsCollapse" aria-expanded="true" aria-controls="arrearsCollapse">
+                        <span><i class="fa-solid fa-clock-rotate-left me-2"></i>Arrears Payment Details (Optional)</span>
+                        <i class="fa-solid fa-chevron-up toggle-icon" id="arrears-toggle-icon"></i>
+                    </div>
+                    <div id="arrearsCollapse" class="collapse show">
+                        <div class="card-body p-3">
+                            <p class="text-muted small mb-3">Select the outstanding month(s) you wish to collect payment for. You can choose to pay fully or adjust the payment field for partial amounts.</p>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm align-middle text-center small mb-0">
+                                    <thead class="table-light text-secondary">
+                                        <tr>
+                                            <th style="width: 50px;">Select</th>
+                                            <th class="text-start">Arrears Month</th>
+                                            <th>Original Balance</th>
+                                            <th>Current Outstanding</th>
+                                            <th style="width: 180px;">Collection Amount (Rs.)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="arrears-list-body">
+                                        <!-- Loaded dynamically by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-end mt-2">
+                                <span class="small fw-semibold text-secondary">Selected Arrears Total: </span>
+                                <span class="fw-bold text-danger fs-6" id="arrears-selected-total">Rs. 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 3. Form Inputs -->
                 <div class="row g-3 mb-4">
                     <!-- Date -->
@@ -76,25 +109,25 @@
                     <!-- Admission Fee -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="admission_fee" class="form-label">Admission Fee (Rs.)</label>
-                        <input type="number" name="admission_fee" id="admission_fee" class="form-control fee-field" value="0" min="0" required>
+                        <input type="number" name="admission_fee" id="admission_fee" class="form-control fee-field animate-calc" value="0" min="0" required>
                     </div>
 
                     <!-- Monthly Tuition Fee -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="monthly_fee" class="form-label">Monthly Fee (Rs.)</label>
-                        <input type="number" name="monthly_fee" id="monthly_fee" class="form-control fee-field" value="0" min="0" required>
+                        <input type="number" name="monthly_fee" id="monthly_fee" class="form-control fee-field animate-calc" value="0" min="0" required>
                     </div>
 
                     <!-- Exam Fee -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="exam_fee" class="form-label">Exam Fee (Rs.)</label>
-                        <input type="number" name="exam_fee" id="exam_fee" class="form-control fee-field" value="0" min="0" required>
+                        <input type="number" name="exam_fee" id="exam_fee" class="form-control fee-field animate-calc" value="0" min="0" required>
                     </div>
 
                     <!-- Arrears display (Readonly, loaded dynamically) -->
                     <div class="col-12 col-sm-6 col-md-3">
-                        <label for="arrears" class="form-label">Previous Arrears (Rs.)</label>
-                        <input type="number" name="arrears" id="arrears" class="form-control bg-light" value="0" readonly>
+                        <label for="arrears" class="form-label">Selected Arrears (Rs.)</label>
+                        <input type="number" name="arrears" id="arrears" class="form-control bg-light fw-bold text-danger" value="0" readonly>
                     </div>
 
                     <!-- Total Amount (Auto Calculated) -->
@@ -106,7 +139,7 @@
                     <!-- Paid Amount (User input) -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="paid_amount" class="form-label text-success fw-bold">Amount Paid (Rs.)</label>
-                        <input type="number" name="paid_amount" id="paid_amount" class="form-control border-success fw-bold" value="0" min="0" required>
+                        <input type="number" name="paid_amount" id="paid_amount" class="form-control border-success fw-bold fs-5 text-success" value="0" min="0" required>
                     </div>
 
                     <!-- Remaining Arrears (Auto Calculated) -->
@@ -166,6 +199,19 @@
 
         const studentSelect = document.getElementById('student_id');
         const infoCard = document.getElementById('student-info-card');
+        const arrearsCard = document.getElementById('arrears-section-card');
+        const arrearsListBody = document.getElementById('arrears-list-body');
+        const arrearsSelectedTotal = document.getElementById('arrears-selected-total');
+        const arrearsToggleIcon = document.getElementById('arrears-toggle-icon');
+
+        // Toggle icon rotation for collapse
+        const arrearsCollapseEl = document.getElementById('arrearsCollapse');
+        arrearsCollapseEl.addEventListener('show.bs.collapse', function () {
+            arrearsToggleIcon.className = 'fa-solid fa-chevron-up toggle-icon';
+        });
+        arrearsCollapseEl.addEventListener('hide.bs.collapse', function () {
+            arrearsToggleIcon.className = 'fa-solid fa-chevron-down toggle-icon';
+        });
         
         // Info fields
         const infoName = document.getElementById('info-name');
@@ -187,11 +233,14 @@
         const sidePaid = document.getElementById('side-paid');
         const sideRemaining = document.getElementById('side-remaining');
 
+        let studentTotalArrears = 0;
+
         // 1. AJAX load student details
         studentSelect.addEventListener('change', function () {
             const studentId = studentSelect.value;
             if (!studentId) {
                 infoCard.classList.add('d-none');
+                arrearsCard.classList.add('d-none');
                 resetForm();
                 return;
             }
@@ -206,19 +255,67 @@
                     infoArrears.textContent = 'Rs. ' + data.arrears.toFixed(2);
                     infoCard.classList.remove('d-none');
 
-                    // Pre-fill Form Fields
-                    arrearsInput.value = data.arrears;
+                    studentTotalArrears = data.arrears;
                     
                     // Monthly fee is loaded by default as standard. Admission and Exam are kept at 0 unless checked
                     monthlyFeeInput.value = data.default_fees.monthly_fee;
-                    admFeeInput.value = 0; // Don't pre-fill admission fee by default on monthly collections
-                    examFeeInput.value = 0; // Don't pre-fill exam fee by default on monthly collections
+                    admFeeInput.value = 0; 
+                    examFeeInput.value = 0; 
+                    
+                    // Render outstanding arrears
+                    arrearsListBody.innerHTML = '';
+                    if (data.outstanding_arrears && data.outstanding_arrears.length > 0) {
+                        data.outstanding_arrears.forEach(item => {
+                            const dateObj = new Date(item.month + '-01');
+                            const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                            
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>
+                                    <input type="checkbox" class="form-check-input arrear-checkbox" name="arrears_months[]" value="${item.month}" data-amount="${item.amount}">
+                                </td>
+                                <td class="text-start fw-semibold text-dark">${monthLabel}</td>
+                                <td>Rs. ${parseFloat(item.original_amount).toFixed(2)}</td>
+                                <td class="fw-bold text-danger">Rs. ${parseFloat(item.amount).toFixed(2)}</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">Rs.</span>
+                                        <input type="number" step="0.01" min="0.01" max="${item.amount}" class="form-control text-end fw-bold text-primary arrear-payment-input" name="arrears_payment[${item.month}]" value="${item.amount}" disabled>
+                                    </div>
+                                </td>
+                            `;
+                            arrearsListBody.appendChild(row);
+                        });
+
+                        arrearsCard.classList.remove('d-none');
+                        // Bind listeners to new checkboxes/inputs
+                        document.querySelectorAll('.arrear-checkbox').forEach(cb => {
+                            cb.addEventListener('change', function() {
+                                const row = this.closest('tr');
+                                const input = row.querySelector('.arrear-payment-input');
+                                input.disabled = !this.checked;
+                                if (this.checked) {
+                                    input.value = this.getAttribute('data-amount');
+                                } else {
+                                    input.value = 0;
+                                }
+                                calculateDues();
+                            });
+                        });
+                        document.querySelectorAll('.arrear-payment-input').forEach(input => {
+                            input.addEventListener('input', calculateDues);
+                        });
+
+                    } else {
+                        arrearsCard.classList.add('d-none');
+                    }
                     
                     if (data.current_month_paid) {
-                        paidInput.value = data.arrears > 0 ? data.arrears : 0;
+                        paidInput.value = 0;
+                        monthlyFeeInput.value = 0;
                         document.getElementById('paid-badge-container').classList.remove('d-none');
                     } else {
-                        paidInput.value = data.default_fees.monthly_fee; // Default paid amount to monthly tuition fee
+                        paidInput.value = data.default_fees.monthly_fee; 
                         document.getElementById('paid-badge-container').classList.add('d-none');
                     }
 
@@ -235,12 +332,27 @@
             const adm = parseFloat(admFeeInput.value) || 0;
             const monthly = parseFloat(monthlyFeeInput.value) || 0;
             const exam = parseFloat(examFeeInput.value) || 0;
-            const arrears = parseFloat(arrearsInput.value) || 0;
 
-            const total = adm + monthly + exam + arrears;
+            // Calculate selected arrears from checkboxes
+            let selectedArrearsToPay = 0;
+            document.querySelectorAll('.arrear-checkbox:checked').forEach(cb => {
+                const row = cb.closest('tr');
+                const val = parseFloat(row.querySelector('.arrear-payment-input').value) || 0;
+                selectedArrearsToPay += val;
+            });
+
+            // Update Selected Arrears input & label
+            arrearsInput.value = selectedArrearsToPay;
+            arrearsSelectedTotal.textContent = 'Rs. ' + selectedArrearsToPay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Calculate totals
+            const total = adm + monthly + exam + selectedArrearsToPay;
             const paid = parseFloat(paidInput.value) || 0;
-            const remaining = total - paid;
-
+            
+            // Remaining outstanding:
+            // Since studentTotalArrears is the previous total, the new total is total - paid
+            const remaining = (studentTotalArrears - selectedArrearsToPay) + maxZero(adm + monthly + exam - maxZero(paid - selectedArrearsToPay));
+            
             totalInput.value = total.toFixed(2);
             remainingInput.value = remaining.toFixed(2);
 
@@ -250,11 +362,21 @@
             sideRemaining.textContent = 'Rs. ' + remaining.toFixed(2);
         }
 
+        function maxZero(val) {
+            return val > 0 ? val : 0;
+        }
+
         // Event listeners on input adjustments
-        document.querySelectorAll('.fee-field').forEach(input => {
+        document.querySelectorAll('.animate-calc').forEach(input => {
             input.addEventListener('input', calculateDues);
         });
         paidInput.addEventListener('input', calculateDues);
+
+        // Allow click event to make full amount payable
+        document.getElementById('pay_in_full_btn')?.addEventListener('click', function() {
+            paidInput.value = totalInput.value;
+            calculateDues();
+        });
 
         function resetForm() {
             admFeeInput.value = 0;
@@ -267,7 +389,10 @@
             sideTotal.textContent = 'Rs. 0.00';
             sidePaid.textContent = 'Rs. 0.00';
             sideRemaining.textContent = 'Rs. 0.00';
+            arrearsSelectedTotal.textContent = 'Rs. 0.00';
+            arrearsListBody.innerHTML = '';
             document.getElementById('paid-badge-container').classList.add('d-none');
+            studentTotalArrears = 0;
         }
     });
 </script>

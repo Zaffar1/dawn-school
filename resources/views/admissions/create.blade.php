@@ -80,7 +80,7 @@
         <h6 class="text-secondary fw-semibold mb-3">2. Enrollment Details</h6>
         <div class="row g-3 mb-4">
             <!-- Select Target Class -->
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
                 <label for="class_id" class="form-label">Select Class</label>
                 <select name="class_id" id="class_id" class="form-select" required>
                     <option value="" selected>Select target class...</option>
@@ -95,14 +95,24 @@
                 </select>
             </div>
 
+            <!-- Section -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="section" class="form-label">Section</label>
+                <select name="section" id="section" class="form-select" required>
+                    <option value="A" {{ old('section', 'A') === 'A' ? 'selected' : '' }}>Section A</option>
+                    <option value="B" {{ old('section') === 'B' ? 'selected' : '' }}>Section B</option>
+                    <option value="C" {{ old('section') === 'C' ? 'selected' : '' }}>Section C</option>
+                </select>
+            </div>
+
             <!-- Roll Number -->
-            <div class="col-12 col-sm-6 col-md-4">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label for="roll_number" class="form-label">Roll Number</label>
                 <input type="text" name="roll_number" id="roll_number" class="form-control" value="{{ old('roll_number') }}" placeholder="e.g. 501" required>
             </div>
 
             <!-- Admission Date -->
-            <div class="col-12 col-sm-6 col-md-4">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label for="admission_date" class="form-label">Admission Date</label>
                 <input type="date" name="admission_date" id="admission_date" class="form-control" value="{{ old('admission_date', date('Y-m-d')) }}" required>
             </div>

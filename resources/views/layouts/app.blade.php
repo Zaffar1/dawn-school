@@ -156,6 +156,16 @@
                 </li>
                 @endcan
 
+                <!-- Arrears Management (Super Admin, Accountant) -->
+                @can('manage-arrears')
+                <li class="{{ Request::routeIs('arrears.*') ? 'active' : '' }}">
+                    <a href="{{ route('arrears.index') }}">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Arrears Management</span>
+                    </a>
+                </li>
+                @endcan
+
                 <!-- Receipts (Super Admin, Accountant) -->
                 @can('manage-receipts')
                 <li class="{{ Request::routeIs('receipts.*') ? 'active' : '' }}">

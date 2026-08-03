@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\HostelController;
 use App\Http\Controllers\HostelResidentController;
 use App\Http\Controllers\HostelResidentFeeController;
+use App\Http\Controllers\ArrearsController;
 
 // Redirect root to dashboard/login
 Route::get('/', function () {
@@ -93,6 +94,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/fee-collection/create', [FeeCollectionController::class, 'create'])->name('fee-collection.create');
         Route::post('/fee-collection', [FeeCollectionController::class, 'store'])->name('fee-collection.store');
         Route::get('/fee-collection/student/{id}', [FeeCollectionController::class, 'getStudentFees'])->name('fee-collection.student-fees');
+    });
+
+    // Arrears Management
+    Route::middleware('can:manage-arrears')->group(function () {
+        Route::get('/arrears', [ArrearsController::class, 'index'])->name('arrears.index');
+        Route::post('/arrears/collect', [ArrearsController::class, 'collectPayment'])->name('arrears.collect');
     });
 
     // Receipts

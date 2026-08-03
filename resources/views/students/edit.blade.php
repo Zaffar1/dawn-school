@@ -73,7 +73,7 @@
         <!-- SECTION 2: Academic Details -->
         <h6 class="text-secondary fw-semibold mb-3">2. Academic Information</h6>
         <div class="row g-3 mb-4">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Admission Number</label>
                 <input type="text" class="form-control bg-light" value="{{ $student->admission_number }}" readonly>
             </div>
@@ -87,7 +87,16 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label for="section" class="form-label">Section</label>
+                <select name="section" id="section" class="form-select" required>
+                    <option value="A" {{ old('section', $student->section) === 'A' ? 'selected' : '' }}>Section A</option>
+                    <option value="B" {{ old('section', $student->section) === 'B' ? 'selected' : '' }}>Section B</option>
+                    <option value="C" {{ old('section', $student->section) === 'C' ? 'selected' : '' }}>Section C</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
                 <label for="roll_number" class="form-label">Roll Number</label>
                 <input type="text" name="roll_number" id="roll_number" class="form-control" value="{{ old('roll_number', $student->roll_number) }}" required>
             </div>

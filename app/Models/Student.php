@@ -15,6 +15,7 @@ class Student extends Model
         'date_of_birth',
         'gender',
         'class_id',
+        'section',
         'roll_number',
         'phone',
         'address',
@@ -39,6 +40,11 @@ class Student extends Model
     public function class(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function studentArrears(): HasMany
+    {
+        return $this->hasMany(StudentArrear::class)->orderBy('month', 'asc');
     }
 
     public function admissions(): HasMany

@@ -76,6 +76,8 @@ class FeeCollectionController extends Controller
             'monthly_fee' => 'required|numeric|min:0',
             'exam_fee' => 'required|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
+            'arrears_payment' => 'nullable|array',
+            'arrears_payment.*' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -115,6 +117,12 @@ class FeeCollectionController extends Controller
             $monthlyFee = 0;
         }
 
+        // Get student's detailed outstanding month-wise arrears
+        $outstandingArrears = \App\Models\StudentArrear::where('student_id', $student->id)
+            ->whereIn('payment_status', ['unpaid', 'partially_paid'])
+            ->orderBy('month', 'asc')
+            ->get();
+
         return response()->json([
             'student_id' => $student->id,
             'name' => $student->name,
@@ -126,7 +134,8 @@ class FeeCollectionController extends Controller
                 'admission_fee' => (float)$admissionFee,
                 'monthly_fee' => (float)$monthlyFee,
                 'exam_fee' => (float)$examFee,
-            ]
+            ],
+            'outstanding_arrears' => $outstandingArrears
         ]);
     }
 }

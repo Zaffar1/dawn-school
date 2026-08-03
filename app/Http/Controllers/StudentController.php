@@ -76,6 +76,7 @@ class StudentController extends Controller
             'date_of_birth' => 'required|date',
             'gender' => 'required|in:male,female,other',
             'class_id' => 'required|exists:classes,id',
+            'section' => 'required|string|max:50',
             'roll_number' => 'required|string|max:50',
             'phone' => 'nullable|string|max:50',
             'address' => 'required|string',
