@@ -364,7 +364,7 @@
                         <span class="summary-underline" style="width: 100px; text-align: center;">{{ $marksheet->percentage }}%</span>
                         
                         <span style="margin-left: 20px;">Position:</span>
-                        <span class="summary-underline" style="width: 100px; text-align: center;">{{ $marksheet->result }}</span>
+                        <span class="summary-underline" style="width: 100px; text-align: center;">{{ $marksheet->position }}</span>
                     </div>
                     
                     <div class="summary-line">

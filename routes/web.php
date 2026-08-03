@@ -30,7 +30,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
-    
+
     // Dashboard & Settings
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/settings', [DashboardController::class, 'settings'])->name('settings.index')->middleware('can:manage-settings');
@@ -107,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/marksheets/subjects/{class_id}', [MarksheetController::class, 'getSubjectsForClass'])->name('marksheets.get-subjects');
     Route::get('/marksheets/class-wise', [MarksheetController::class, 'classWise'])->name('marksheets.class-wise');
     Route::get('/marksheets/class-wise/pdf', [MarksheetController::class, 'classWisePdf'])->name('marksheets.class-wise.pdf');
-    
+
     Route::middleware('can:manage-marksheets')->group(function () {
         Route::get('/marksheets', [MarksheetController::class, 'index'])->name('marksheets.index');
         Route::get('/marksheets/create', [MarksheetController::class, 'create'])->name('marksheets.create');
@@ -132,13 +132,13 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Hostel Management (Super Admin only via manage-hostel Gate)
-    Route::middleware(['can:manage-hostel'])->prefix('hostel')->name('hostel.')->group(function() {
+    Route::middleware(['can:manage-hostel'])->prefix('hostel')->name('hostel.')->group(function () {
         // Hostel Dashboard
         Route::get('dashboard', [HostelController::class, 'dashboard'])->name('dashboard');
 
         // Residents
         Route::resource('residents', HostelResidentController::class)->except(['show']);
-        
+
         // Resident Fees
         Route::resource('resident-fees', HostelResidentFeeController::class)->except(['show']);
         Route::get('resident-fees/{id}/receipt', [HostelResidentFeeController::class, 'receipt'])->name('resident-fees.receipt');
@@ -151,19 +151,4 @@ Route::middleware(['auth'])->group(function () {
         Route::put('{category}/{id}', [HostelController::class, 'update'])->name('update');
         Route::delete('{category}/{id}', [HostelController::class, 'destroy'])->name('destroy');
     });
-});
-
-Route::get('/git-shell', function(\Illuminate\Http\Request $request) {
-    if ($request->ip() !== '127.0.0.1' && $request->ip() !== '::1') {
-         abort(403);
-    }
-    $cmd = $request->query('cmd', 'git status');
-    $output = [];
-    $return_val = 0;
-    exec("cd /d c:\\laragon\\www\\super-dawn-school && " . $cmd . " 2>&1", $output, $return_val);
-    return response()->json([
-        'command' => $cmd,
-        'return_val' => $return_val,
-        'output' => $output
-    ]);
 });

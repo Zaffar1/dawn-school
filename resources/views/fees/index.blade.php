@@ -18,19 +18,55 @@
     </div>
 </div>
 
+<!-- Search & Filters -->
 <div class="card-box mb-4">
-    <form action="{{ route('fee-collection.index') }}" method="GET" class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label for="month" class="col-form-label fw-semibold"><i class="fa-regular fa-calendar me-2"></i>Filter by Month:</label>
-        </div>
-        <div class="col-auto">
-            <input type="month" name="month" id="month" class="form-control" value="{{ request('month') }}">
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter me-1"></i> Filter</button>
-            @if(request('month'))
-                <a href="{{ route('fee-collection.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-times me-1"></i> Clear</a>
-            @endif
+    <form method="GET" action="{{ route('fee-collection.index') }}">
+        <div class="row g-3 align-items-end">
+            <!-- Search Text -->
+            <div class="col-md-3">
+                <label class="form-label small text-muted fw-semibold">Search Student</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Search by name, roll, or GR no..." value="{{ request('search') }}">
+                </div>
+            </div>
+            
+            <!-- Class Selection -->
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold">Class</label>
+                <select name="class_id" class="form-select">
+                    <option value="">-- All Classes --</option>
+                    @foreach($classes as $cls)
+                        <option value="{{ $cls->id }}" {{ request('class_id') == $cls->id ? 'selected' : '' }}>
+                            {{ $cls->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <!-- Month Selection -->
+            <div class="col-md-2">
+                <label class="form-label small text-muted fw-semibold">Payment Month</label>
+                <input type="month" name="month" class="form-control" value="{{ request('month') }}">
+            </div>
+            
+            <!-- Show Arrears Only Checkbox -->
+            <div class="col-md-2 d-flex align-items-center pb-2" style="height: 38px;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="has_arrears" id="has_arrears" value="1" {{ request('has_arrears') == '1' ? 'checked' : '' }}>
+                    <label class="form-check-label small fw-semibold text-muted" for="has_arrears">
+                        Show Arrears Only
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Filter Button -->
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                <a href="{{ route('fee-collection.index') }}" class="btn btn-outline-secondary w-100">Clear</a>
+            </div>
         </div>
     </form>
 </div>

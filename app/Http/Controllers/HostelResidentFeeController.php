@@ -25,6 +25,10 @@ class HostelResidentFeeController extends Controller
             $query->whereBetween('date', [$request->start_date, $request->end_date]);
         }
 
+        if ($request->filled('has_arrears') && $request->has_arrears == '1') {
+            $query->where('arrears', '>', 0);
+        }
+
         $payments = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
         $residents = HostelResident::active()->orderBy('name')->get();
@@ -54,12 +58,18 @@ class HostelResidentFeeController extends Controller
         $validated = $request->validate([
             'hostel_resident_id' => 'required|exists:hostel_residents,id',
             'amount' => 'required|numeric|min:0.01',
+            'due_amount' => 'required|numeric|min:0',
+            'arrears' => 'nullable|numeric',
             'date' => 'required|date',
             'billing_month' => 'required|string|regex:/^\d{4}-\d{2}$/',
             'payment_method' => 'required|string|max:50',
             'reference_no' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
+
+        if (!isset($validated['arrears'])) {
+            $validated['arrears'] = $validated['due_amount'] - $validated['amount'];
+        }
 
         $payment = HostelFeePayment::create($validated);
 
@@ -81,12 +91,18 @@ class HostelResidentFeeController extends Controller
         $validated = $request->validate([
             'hostel_resident_id' => 'required|exists:hostel_residents,id',
             'amount' => 'required|numeric|min:0.01',
+            'due_amount' => 'required|numeric|min:0',
+            'arrears' => 'nullable|numeric',
             'date' => 'required|date',
             'billing_month' => 'required|string|regex:/^\d{4}-\d{2}$/',
             'payment_method' => 'required|string|max:50',
             'reference_no' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
+
+        if (!isset($validated['arrears'])) {
+            $validated['arrears'] = $validated['due_amount'] - $validated['amount'];
+        }
 
         $payment->update($validated);
 

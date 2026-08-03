@@ -18,14 +18,14 @@
 
 <!-- Financial Summary Row -->
 <div class="row g-4 mb-4">
-    <!-- Active Residents Card -->
+    <!-- Active Students Card -->
     <div class="col-md-3">
         <div class="card-stat bg-white h-100">
             <div class="icon-box bg-primary-subtle text-primary">
                 <i class="fa-solid fa-user-check"></i>
             </div>
             <div class="stat-value">{{ $activeResidents }} <span class="fs-6 text-muted font-monospace">/ {{ $totalResidents }}</span></div>
-            <div class="stat-label">Active Residents</div>
+            <div class="stat-label">Active Students/Staff</div>
         </div>
     </div>
 
@@ -82,7 +82,7 @@
         <div class="col-6 col-lg-3 col-xl-2">
             <a href="{{ route('hostel.residents.create') }}" class="btn btn-outline-primary py-3 w-100 text-center h-100 d-flex flex-column align-items-center justify-content-center border-dashed rounded-3">
                 <i class="fa-solid fa-user-plus fs-4 mb-2"></i>
-                <span class="small fw-semibold">Add Resident</span>
+                <span class="small fw-semibold">Add Student</span>
             </a>
         </div>
         <div class="col-6 col-lg-3 col-xl-2">
@@ -131,7 +131,7 @@
                 <table class="table table-sm table-hover align-middle" style="font-size: 0.9rem;">
                     <thead>
                         <tr class="table-light">
-                            <th>Resident</th>
+                            <th>Student</th>
                             <th>Room</th>
                             <th>Month</th>
                             <th class="text-end">Amount</th>
