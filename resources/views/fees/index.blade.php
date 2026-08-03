@@ -18,6 +18,23 @@
     </div>
 </div>
 
+<div class="card-box mb-4">
+    <form action="{{ route('fee-collection.index') }}" method="GET" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="month" class="col-form-label fw-semibold"><i class="fa-regular fa-calendar me-2"></i>Filter by Month:</label>
+        </div>
+        <div class="col-auto">
+            <input type="month" name="month" id="month" class="form-control" value="{{ request('month') }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+            @if(request('month'))
+                <a href="{{ route('fee-collection.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-times me-1"></i> Clear</a>
+            @endif
+        </div>
+    </form>
+</div>
+
 <div class="card-box">
     <h5 class="text-primary mb-3"><i class="fa-solid fa-list me-2"></i>Fee Collections History</h5>
     <div class="table-responsive">

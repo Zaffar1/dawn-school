@@ -58,6 +58,11 @@
                         <div class="col-6 col-sm-3 text-muted">Current Arrears:</div>
                         <div class="col-6 col-sm-3 fw-bold text-warning" id="info-arrears">Rs. 0.00</div>
                     </div>
+                    <div id="paid-badge-container" class="mt-3 d-none">
+                        <div class="alert alert-success py-2 mb-0 small border-0">
+                            <i class="fa-solid fa-check-circle me-1"></i> Current month fee is already paid! Only showing arrears to be collected.
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 3. Form Inputs -->
@@ -209,7 +214,13 @@
                     admFeeInput.value = 0; // Don't pre-fill admission fee by default on monthly collections
                     examFeeInput.value = 0; // Don't pre-fill exam fee by default on monthly collections
                     
-                    paidInput.value = data.default_fees.monthly_fee; // Default paid amount to monthly tuition fee
+                    if (data.current_month_paid) {
+                        paidInput.value = data.arrears > 0 ? data.arrears : 0;
+                        document.getElementById('paid-badge-container').classList.remove('d-none');
+                    } else {
+                        paidInput.value = data.default_fees.monthly_fee; // Default paid amount to monthly tuition fee
+                        document.getElementById('paid-badge-container').classList.add('d-none');
+                    }
 
                     calculateDues();
                 })
@@ -256,6 +267,7 @@
             sideTotal.textContent = 'Rs. 0.00';
             sidePaid.textContent = 'Rs. 0.00';
             sideRemaining.textContent = 'Rs. 0.00';
+            document.getElementById('paid-badge-container').classList.add('d-none');
         }
     });
 </script>

@@ -18,9 +18,19 @@ class FeeCollectionController extends Controller
         $this->feeService = $feeService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $receipts = FeeReceipt::with(['student.class'])->orderBy('date', 'desc')->orderBy('id', 'desc')->paginate(15);
+        $query = FeeReceipt::with(['student.class']);
+
+        if ($request->filled('month')) {
+            $parts = explode('-', $request->month);
+            if (count($parts) === 2) {
+                $query->whereYear('date', $parts[0])
+                      ->whereMonth('date', $parts[1]);
+            }
+        }
+
+        $receipts = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->paginate(15)->appends($request->query());
         return view('fees.index', compact('receipts'));
     }
 
@@ -61,6 +71,13 @@ class FeeCollectionController extends Controller
     {
         $student = Student::with(['class'])->findOrFail($id);
 
+        // Check if student has already paid monthly fee in the current month
+        $currentMonthPaid = \App\Models\FeeReceipt::where('student_id', $student->id)
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->where('monthly_fee', '>', 0)
+            ->exists();
+
         // If student does not have fee values set, load class defaults
         $classFeeSetting = $student->class->feeSetting;
         
@@ -68,12 +85,17 @@ class FeeCollectionController extends Controller
         $monthlyFee = $student->monthly_fee > 0 ? $student->monthly_fee : ($classFeeSetting ? $classFeeSetting->monthly_fee : 2000.00);
         $examFee = $student->exam_fee > 0 ? $student->exam_fee : ($classFeeSetting ? $classFeeSetting->exam_fee : 500.00);
 
+        if ($currentMonthPaid) {
+            $monthlyFee = 0;
+        }
+
         return response()->json([
             'student_id' => $student->id,
             'name' => $student->name,
             'father_name' => $student->father_name,
             'class_name' => $student->class->name,
             'arrears' => (float)$student->arrears,
+            'current_month_paid' => $currentMonthPaid,
             'default_fees' => [
                 'admission_fee' => (float)$admissionFee,
                 'monthly_fee' => (float)$monthlyFee,

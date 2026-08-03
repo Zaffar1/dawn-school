@@ -24,15 +24,21 @@
 <div class="card-box mb-4">
     <form action="{{ route('receipts.index') }}" method="GET" class="row g-3 align-items-end">
         <!-- Search -->
-        <div class="col-12 col-md-3">
-            <label for="search" class="form-label">Search Receipt No</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="e.g. SDS-2026-00001" value="{{ $search }}">
+        <div class="col-12 col-md-2">
+            <label for="search" class="form-label">Receipt No</label>
+            <input type="text" name="search" id="search" class="form-control" placeholder="SDS..." value="{{ $search }}">
         </div>
 
         <!-- Date -->
         <div class="col-12 col-sm-6 col-md-2">
-            <label for="date" class="form-label">Payment Date</label>
+            <label for="date" class="form-label">Date</label>
             <input type="date" name="date" id="date" class="form-control" value="{{ $dateFilter }}">
+        </div>
+
+        <!-- Month -->
+        <div class="col-12 col-sm-6 col-md-2">
+            <label for="month" class="form-label">Month</label>
+            <input type="month" name="month" id="month" class="form-control" value="{{ $monthFilter }}">
         </div>
 
         <!-- Class -->
@@ -47,12 +53,12 @@
         </div>
 
         <!-- Student -->
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-2">
             <label for="student_id" class="form-label">Student</label>
             <select name="student_id" id="student_id" class="form-select">
                 <option value="">All Students</option>
                 @foreach($students as $st)
-                    <option value="{{ $st->id }}" {{ $studentFilter == $st->id ? 'selected' : '' }}>{{ $st->name }} ({{ $st->admission_number }})</option>
+                    <option value="{{ $st->id }}" {{ $studentFilter == $st->id ? 'selected' : '' }}>{{ $st->name }}</option>
                 @endforeach
             </select>
         </div>

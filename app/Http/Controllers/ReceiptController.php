@@ -21,6 +21,7 @@ class ReceiptController extends Controller
     {
         $search = $request->input('search');
         $dateFilter = $request->input('date');
+        $monthFilter = $request->input('month');
         $classFilter = $request->input('class_id');
         $studentFilter = $request->input('student_id');
 
@@ -34,6 +35,15 @@ class ReceiptController extends Controller
         // Filter by Date
         if ($dateFilter) {
             $query->whereDate('date', $dateFilter);
+        }
+
+        // Filter by Month
+        if ($monthFilter) {
+            $parts = explode('-', $monthFilter);
+            if (count($parts) === 2) {
+                $query->whereYear('date', $parts[0])
+                      ->whereMonth('date', $parts[1]);
+            }
         }
 
         // Filter by Class
@@ -52,7 +62,7 @@ class ReceiptController extends Controller
         $classes = SchoolClass::where('status', 'active')->get();
         $students = Student::active()->orderBy('name')->get();
 
-        return view('receipts.index', compact('receipts', 'classes', 'students', 'search', 'dateFilter', 'classFilter', 'studentFilter'));
+        return view('receipts.index', compact('receipts', 'classes', 'students', 'search', 'dateFilter', 'monthFilter', 'classFilter', 'studentFilter'));
     }
 
     public function show($id)
