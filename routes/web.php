@@ -100,6 +100,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('can:manage-arrears')->group(function () {
         Route::get('/arrears', [ArrearsController::class, 'index'])->name('arrears.index');
         Route::post('/arrears/collect', [ArrearsController::class, 'collectPayment'])->name('arrears.collect');
+        Route::put('/arrears/{id}', [ArrearsController::class, 'update'])->name('arrears.update');
+        Route::post('/arrears', [ArrearsController::class, 'store'])->name('arrears.store');
     });
 
     // Receipts

@@ -167,4 +167,136 @@ class ArrearsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update a student's specific arrears record.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'month' => 'required|date_format:Y-m',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $arrear = StudentArrear::findOrFail($id);
+
+            // Check if month already exists for this student in another record
+            $exists = StudentArrear::where('student_id', $arrear->student_id)
+                ->where('month', $request->month)
+                ->where('id', '!=', $id)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An arrears record already exists for the selected month.'
+                ], 422);
+            }
+
+            DB::transaction(function () use ($arrear, $request) {
+                $amount = (float) $request->amount;
+                $originalAmount = (float) $arrear->original_amount;
+
+                // Adjust original_amount and payment_status based on the updated amount
+                if ($amount == 0) {
+                    $paymentStatus = 'paid';
+                } elseif ($amount >= $originalAmount) {
+                    $originalAmount = $amount;
+                    $paymentStatus = 'unpaid';
+                } else {
+                    $paymentStatus = 'partially_paid';
+                }
+
+                $arrear->update([
+                    'month' => $request->month,
+                    'amount' => $amount,
+                    'original_amount' => $originalAmount,
+                    'payment_status' => $paymentStatus,
+                ]);
+
+                // Recalculate student's total arrears
+                $student = $arrear->student;
+                $totalArrears = StudentArrear::where('student_id', $student->id)
+                    ->whereIn('payment_status', ['unpaid', 'partially_paid'])
+                    ->sum('amount');
+
+                $student->update([
+                    'arrears' => $totalArrears
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Arrears updated successfully.'
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update arrears: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new student arrears record.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'month' => 'required|date_format:Y-m',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $student = Student::findOrFail($request->student_id);
+
+            // Check if month already exists for this student
+            $exists = StudentArrear::where('student_id', $student->id)
+                ->where('month', $request->month)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An arrears record already exists for the selected month.'
+                ], 422);
+            }
+
+            DB::transaction(function () use ($student, $request) {
+                $amount = (float) $request->amount;
+                $paymentStatus = $amount == 0 ? 'paid' : 'unpaid';
+
+                StudentArrear::create([
+                    'student_id' => $student->id,
+                    'month' => $request->month,
+                    'amount' => $amount,
+                    'original_amount' => $amount,
+                    'payment_status' => $paymentStatus,
+                ]);
+
+                // Recalculate student's total arrears
+                $totalArrears = StudentArrear::where('student_id', $student->id)
+                    ->whereIn('payment_status', ['unpaid', 'partially_paid'])
+                    ->sum('amount');
+
+                $student->update([
+                    'arrears' => $totalArrears
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Arrears added successfully.'
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add arrears: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

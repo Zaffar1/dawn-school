@@ -201,14 +201,66 @@
                                             $amtClass = 'text-danger fw-bold';
                                         }
                                     @endphp
-                                    <div class="d-flex align-items-center justify-content-between gap-3 border-bottom pb-1" style="font-size: 0.8rem;">
-                                        <span class="fw-semibold text-dark">{{ $arrMonthText }}</span>
-                                        <span class="{{ $amtClass }}">Rs. {{ number_format($arr->amount, 2) }}</span>
-                                        <span class="badge {{ $statusClass }} border py-0.5 px-1.5" style="font-size: 0.65rem;">{{ $statusLabel }}</span>
+                                    <div class="arrear-item-container border-bottom pb-1 mb-1" data-arrear-id="{{ $arr->id }}">
+                                        <!-- View Mode -->
+                                        <div class="d-flex align-items-center justify-content-between gap-2 arrear-view-mode" style="font-size: 0.8rem;">
+                                            <span class="fw-semibold text-dark arrear-month-label">{{ $arrMonthText }}</span>
+                                            <span class="{{ $amtClass }} arrear-amount-label">Rs. {{ number_format($arr->amount, 2) }}</span>
+                                            <span class="badge {{ $statusClass }} border py-0.5 px-1.5 arrear-status-badge" style="font-size: 0.65rem;">{{ $statusLabel }}</span>
+                                            <button class="btn btn-link text-primary p-0 ms-1 edit-arrear-btn" title="Edit Month/Fee" style="font-size: 0.75rem;">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Edit Mode (hidden by default) -->
+                                        <div class="arrear-edit-mode d-none mt-1 p-2 bg-light rounded shadow-sm border" style="max-width: 200px;">
+                                            <div class="mb-1">
+                                                <label class="form-label mb-0 fw-bold text-secondary" style="font-size: 0.7rem;">Month</label>
+                                                <input type="month" class="form-control form-control-sm edit-month-input py-0 px-1" value="{{ $arr->month }}" style="font-size: 0.75rem;">
+                                            </div>
+                                            <div class="mb-1.5">
+                                                <label class="form-label mb-0 fw-bold text-secondary" style="font-size: 0.7rem;">Amount (Rs.)</label>
+                                                <input type="number" step="0.01" min="0" class="form-control form-control-sm edit-amount-input py-0 px-1" value="{{ $arr->amount }}" style="font-size: 0.75rem;">
+                                            </div>
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <button class="btn btn-success btn-xs text-white py-0.5 px-1.5 save-arrear-btn" style="font-size: 0.65rem; padding: 1px 4px;">
+                                                    <i class="fa-solid fa-check"></i> Save
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-xs py-0.5 px-1.5 cancel-arrear-btn" style="font-size: 0.65rem; padding: 1px 4px;">
+                                                    <i class="fa-solid fa-xmark"></i> Cancel
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 @empty
-                                    <span class="text-muted small">No detailed months.</span>
+                                    <span class="text-muted small d-block mb-1">No detailed months.</span>
                                 @endforelse
+
+                                <div class="mt-1 student-add-arrear-wrapper" data-student-id="{{ $student->id }}">
+                                    <!-- Add Button -->
+                                    <button class="btn btn-link text-success p-0 fw-semibold add-arrear-toggle-btn" style="font-size: 0.75rem; text-decoration: none;">
+                                        <i class="fa-solid fa-circle-plus me-1"></i>Add Month
+                                    </button>
+                                    
+                                    <!-- Add Form (hidden by default) -->
+                                    <div class="arrear-add-form-container d-none mt-2 p-2 bg-light rounded shadow-sm border" style="max-width: 200px;">
+                                        <div class="mb-1">
+                                            <label class="form-label mb-0 fw-bold text-secondary" style="font-size: 0.7rem;">Month</label>
+                                            <input type="month" class="form-control form-control-sm add-month-input py-0 px-1" value="{{ date('Y-m') }}" style="font-size: 0.75rem;">
+                                        </div>
+                                        <div class="mb-1.5">
+                                            <label class="form-label mb-0 fw-bold text-secondary" style="font-size: 0.7rem;">Amount (Rs.)</label>
+                                            <input type="number" step="0.01" min="0" class="form-control form-control-sm add-amount-input py-0 px-1" value="0.00" style="font-size: 0.75rem;">
+                                        </div>
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <button class="btn btn-primary btn-xs text-white py-0.5 px-1.5 submit-add-arrear-btn" style="font-size: 0.65rem; padding: 1px 4px;">
+                                                <i class="fa-solid fa-check"></i> Add
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-xs py-0.5 px-1.5 cancel-add-arrear-btn" style="font-size: 0.65rem; padding: 1px 4px;">
+                                                <i class="fa-solid fa-xmark"></i> Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                         <td class="text-end">
@@ -360,6 +412,242 @@ document.addEventListener('DOMContentLoaded', function() {
     const spinner = submitBtn.querySelector('.spinner-border');
 
     let currentStudentMaxArrears = 0;
+
+    // Helper function to show floating alert toast
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container') || (() => {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.position = 'fixed';
+            container.style.top = '20px';
+            container.style.right = '20px';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        })();
+
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show shadow-lg border-0`;
+        toast.role = 'alert';
+        toast.style.minWidth = '300px';
+        toast.style.borderRadius = '12px';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-success' : 'fa-circle-exclamation text-danger'} fs-5"></i>
+                <div>${message}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(toast);
+            bsAlert.close();
+        }, 4000);
+    }
+
+    // Toggle View/Edit Mode for arrears
+    document.querySelectorAll('.edit-arrear-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const container = this.closest('.arrear-item-container');
+            const viewMode = container.querySelector('.arrear-view-mode');
+            const editMode = container.querySelector('.arrear-edit-mode');
+            
+            // Hide view mode, show edit mode
+            viewMode.classList.add('d-none');
+            editMode.classList.remove('d-none');
+        });
+    });
+
+    document.querySelectorAll('.cancel-arrear-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const container = this.closest('.arrear-item-container');
+            const viewMode = container.querySelector('.arrear-view-mode');
+            const editMode = container.querySelector('.arrear-edit-mode');
+            
+            // Reset input values
+            const monthInput = editMode.querySelector('.edit-month-input');
+            const amountInput = editMode.querySelector('.edit-amount-input');
+            monthInput.value = monthInput.defaultValue;
+            amountInput.value = amountInput.defaultValue;
+            
+            // Hide edit mode, show view mode
+            editMode.classList.add('d-none');
+            viewMode.classList.remove('d-none');
+        });
+    });
+
+    document.querySelectorAll('.save-arrear-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const container = this.closest('.arrear-item-container');
+            const arrearId = container.getAttribute('data-arrear-id');
+            const editMode = container.querySelector('.arrear-edit-mode');
+            const viewMode = container.querySelector('.arrear-view-mode');
+            
+            const monthInput = editMode.querySelector('.edit-month-input');
+            const amountInput = editMode.querySelector('.edit-amount-input');
+            
+            const monthVal = monthInput.value;
+            const amountVal = parseFloat(amountInput.value);
+            
+            if (!monthVal) {
+                showToast('Please select a valid month.', 'danger');
+                return;
+            }
+            if (isNaN(amountVal) || amountVal < 0) {
+                showToast('Please enter a valid amount (>= 0).', 'danger');
+                return;
+            }
+            
+            // Disable inputs/button and show loading
+            this.disabled = true;
+            monthInput.disabled = true;
+            amountInput.disabled = true;
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            
+            fetch(`{{ url('/arrears') }}/${arrearId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    month: monthVal,
+                    amount: amountVal
+                })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                if (res.status === 200 && res.body.success) {
+                    showToast(res.body.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(res.body.message || 'Failed to update arrears.', 'danger');
+                    this.disabled = false;
+                    monthInput.disabled = false;
+                    amountInput.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            })
+            .catch(err => {
+                showToast('An unexpected error occurred. Please try again.', 'danger');
+                this.disabled = false;
+                monthInput.disabled = false;
+                amountInput.disabled = false;
+                this.innerHTML = originalHtml;
+                console.error(err);
+            });
+        });
+    });
+
+    // Toggle Add Arrear Form
+    document.querySelectorAll('.add-arrear-toggle-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const wrapper = this.closest('.student-add-arrear-wrapper');
+            const formContainer = wrapper.querySelector('.arrear-add-form-container');
+            
+            // Show form, hide button
+            this.classList.add('d-none');
+            formContainer.classList.remove('d-none');
+        });
+    });
+
+    document.querySelectorAll('.cancel-add-arrear-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const wrapper = this.closest('.student-add-arrear-wrapper');
+            const toggleBtn = wrapper.querySelector('.add-arrear-toggle-btn');
+            const formContainer = wrapper.querySelector('.arrear-add-form-container');
+            
+            // Reset input values
+            const monthInput = formContainer.querySelector('.add-month-input');
+            const amountInput = formContainer.querySelector('.add-amount-input');
+            monthInput.value = monthInput.defaultValue;
+            amountInput.value = amountInput.defaultValue;
+            
+            // Hide form, show button
+            formContainer.classList.add('d-none');
+            toggleBtn.classList.remove('d-none');
+        });
+    });
+
+    document.querySelectorAll('.submit-add-arrear-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const wrapper = this.closest('.student-add-arrear-wrapper');
+            const studentId = wrapper.getAttribute('data-student-id');
+            const formContainer = wrapper.querySelector('.arrear-add-form-container');
+            
+            const monthInput = formContainer.querySelector('.add-month-input');
+            const amountInput = formContainer.querySelector('.add-amount-input');
+            
+            const monthVal = monthInput.value;
+            const amountVal = parseFloat(amountInput.value);
+            
+            if (!monthVal) {
+                showToast('Please select a valid month.', 'danger');
+                return;
+            }
+            if (isNaN(amountVal) || amountVal < 0) {
+                showToast('Please enter a valid amount (>= 0).', 'danger');
+                return;
+            }
+            
+            // Disable inputs/button and show loading
+            this.disabled = true;
+            monthInput.disabled = true;
+            amountInput.disabled = true;
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            
+            fetch(`{{ url('/arrears') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    month: monthVal,
+                    amount: amountVal
+                })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                if (res.status === 200 && res.body.success) {
+                    showToast(res.body.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(res.body.message || 'Failed to add arrears.', 'danger');
+                    this.disabled = false;
+                    monthInput.disabled = false;
+                    amountInput.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            })
+            .catch(err => {
+                showToast('An unexpected error occurred. Please try again.', 'danger');
+                this.disabled = false;
+                monthInput.disabled = false;
+                amountInput.disabled = false;
+                this.innerHTML = originalHtml;
+                console.error(err);
+            });
+        });
+    });
 
     // Attach click events to Collect Payment buttons
     document.querySelectorAll('.collect-payment-btn').forEach(button => {
